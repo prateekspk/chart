@@ -19,11 +19,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Badge from "@material-ui/core/Badge";
 import Tooltip from "@material-ui/core/Tooltip";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { useDrag, useDrop } from "react-dnd";
 import organization from "./org.json";
-
 import {
   createMuiTheme,
   makeStyles,
@@ -54,84 +50,36 @@ const useStyles = makeStyles((theme) => ({
 
 function Organization({ org, onCollapse, collapsed }) {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const [{ canDrop, isOver }, drop] = useDrop({
-    accept: "account",
-    drop: () => ({ name: org.tradingName }),
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop()
-    })
-  });
-  const isActive = canDrop && isOver;
   let backgroundColor = "white";
-  if (isActive) {
-    backgroundColor = "#ddffd2";
-  } else if (canDrop) {
-    backgroundColor = "#ffeedc";
-  }
   return (
     <Card
       variant="outlined"
       className={classes.root}
-      ref={drop}
       style={{ backgroundColor }}
     >
       <CardHeader
         avatar={
-          <Tooltip
-            title={`${_.size(
-              org.organizationChildRelationship
-            )} Sub Profile, ${_.size(org.account)} Sub Account`}
-            arrow
+          <Badge
+            style={{ cursor: "pointer" }}
+            color="secondary"
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right"
+            }}
+            showZero
+            invisible={!collapsed}
+            overlap="circle"
+            badgeContent={_.size(org.organizationChildRelationship)}
+            onClick={onCollapse}
           >
-            <Badge
-              style={{ cursor: "pointer" }}
-              color="secondary"
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right"
-              }}
-              showZero
-              invisible={!collapsed}
-              overlap="circle"
-              badgeContent={_.size(org.organizationChildRelationship)}
-              onClick={onCollapse}
-            >
-              <Avatar className={classes.avatar}>
-                <BusinessIcon color="primary" />
-              </Avatar>
-            </Badge>
-          </Tooltip>
+            <Avatar className={classes.avatar}>
+              <BusinessIcon color="primary" />
+            </Avatar>
+          </Badge>
         }
         title={org.tradingName}
-        action={
-          <IconButton size="small" onClick={handleClick}>
-            <MoreVertIcon />
-          </IconButton>
-        }
       />
 
-      <Menu open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handleClose}>
-        <MenuItem onClick={handleClose}>
-          <ListItemIcon>
-            <BusinessIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText primary="Add Sub Profile" />
-        </MenuItem>
-        <MenuItem onClick={handleClose}>
-          <ListItemIcon>
-            <AccountBalanceIcon color="secondary" />
-          </ListItemIcon>
-          <ListItemText primary="Add Sub Account" />
-        </MenuItem>
-      </Menu>
       <IconButton
         size="small"
         onClick={onCollapse}
@@ -144,26 +92,14 @@ function Organization({ org, onCollapse, collapsed }) {
     </Card>
   );
 }
+
 function Account({ a }) {
   const classes = useStyles();
-  const [{ isDragging }, drag] = useDrag({
-    item: { name: a.name, type: "account" },
-    end: (item, monitor) => {
-      const dropResult = monitor.getDropResult();
-      if (item && dropResult) {
-        alert(`You moved ${item.name} to ${dropResult.name}`);
-      }
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging()
-    })
-  });
-  const opacity = isDragging ? 0.4 : 1;
+  const opacity = 1;
   return (
     <Card
       variant="outlined"
       className={classes.root}
-      ref={drag}
       style={{ cursor: "pointer", opacity }}
     >
       <CardHeader
@@ -249,9 +185,7 @@ export default function App(props) {
   return (
     <ThemeProvider theme={theme}>
       <Box bgcolor="background" padding={4} height="80vh">
-        <DndProvider backend={HTML5Backend}>
-          <Node o={organization} />
-        </DndProvider>
+        <Node o={organization} />
       </Box>
     </ThemeProvider>
   );
